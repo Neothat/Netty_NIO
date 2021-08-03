@@ -19,12 +19,23 @@ public class MainHandler extends SimpleChannelInboundHandler<String> {
         System.out.println("Клиент подключился" + ctx);
         channels.add(ctx.channel());
         clientName = "Клиент №" + newClientIndex++;
+        broadcastMessage("SERVER", clientName + " Подключился в чат!");
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
         System.out.println("Полученно сообщение" + s);
-        String out = String.format("[%s]: %s\n", clientName, s);
+        if (s.startsWith("/")) {
+            if (s.startsWith("/changename ")) {
+                clientName = s.split("\\s", 2)[1];
+            }
+            return;
+        }
+        broadcastMessage(clientName, s);
+    }
+
+    public void broadcastMessage(String clientName, String message){
+        String out = String.format("[%s]: %s\n", clientName, message);
         for (Channel c : channels) {
             c.writeAndFlush(out);
         }
@@ -32,8 +43,9 @@ public class MainHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.out.println("Клиент" + clientName + " отвалился");
+        System.out.println("Клиент " + clientName + " отвалился");
         channels.remove(ctx.channel());
+        broadcastMessage("SERVER", clientName + " Покинул чат!");
         ctx.close();
     }
 }

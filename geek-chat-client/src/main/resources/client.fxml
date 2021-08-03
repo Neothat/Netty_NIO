@@ -11,7 +11,7 @@
       xmlns:fx="http://javafx.com/fxml">
     <TextArea fx:id="mainArea" editable="false" VBox.vgrow="ALWAYS" />
     <HBox>
-        <TextField fx:id="msgField" HBox.hgrow="ALWAYS" promptText="Введите сообщение" />
-        <Button text="Отправить" />
+        <TextField fx:id="msgField" HBox.hgrow="ALWAYS" promptText="Введите сообщение" onAction="#sendMsgAction"/>
+        <Button text="Отправить" onAction="#sendMsgAction"/>
     </HBox>
 </VBox>

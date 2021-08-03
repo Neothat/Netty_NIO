@@ -1,22 +1,33 @@
 package com.geekbrains.geek.chat.server;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 
-public class MainHandler extends ChannelInboundHandlerAdapter {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainHandler extends SimpleChannelInboundHandler<String> {
+    private static final List<Channel> channels = new ArrayList<>();
+    private static int newClientIndex = 1;
+    private String clientName;
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Клиент подключился");
+        System.out.println("Клиент подключился" + ctx);
+        channels.add(ctx.channel());
+        clientName = "Клиент №" + newClientIndex++;
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = (ByteBuf) msg;
-        while (buf.readableBytes() > 0) {
-            System.out.print((char) buf.readByte());
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
+        System.out.println("Полученно сообщение" + s);
+        String out = String.format("[%s]: %s\n", clientName, s);
+        for (Channel c : channels) {
+            c.writeAndFlush(out);
         }
-        buf.release();
     }
 
     @Override

@@ -1,9 +1,7 @@
 package com.geekbrains.geek.chat.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -27,7 +25,14 @@ public class Network {
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
                                 channel = socketChannel;
-                                socketChannel.pipeline().addLast(new StringDecoder(), new StringEncoder());
+                                socketChannel.pipeline().addLast(new StringDecoder(), new StringEncoder(),
+                                        new SimpleChannelInboundHandler<String>() {
+                                            @Override
+                                            protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
+                                                System.out.println(s);
+                                            }
+                                        }
+                                );
                             }
                         });
                 ChannelFuture future = b.connect(HOST, PORT).sync();

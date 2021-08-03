@@ -19,7 +19,9 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        network = new Network(); //В идеале инициализацию с помощью кнопки
+        network = new Network((args -> {
+            mainArea.appendText((String) args[0]);
+        })); //В идеале инициализацию с помощью кнопки
     }
 
     public void sendMsgAction(ActionEvent actionEvent) {

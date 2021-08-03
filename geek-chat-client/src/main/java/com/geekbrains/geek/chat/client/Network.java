@@ -10,12 +10,14 @@ import io.netty.handler.codec.string.StringEncoder;
 
 public class Network {
     private SocketChannel channel;
+    private Callback onMassageReceivedCallback;
 
     private static final String HOST = "localhost";
     private static final int PORT = 8189;
 
-    public Network() {
-        new Thread(() -> {
+    public Network(Callback onMassageReceivedCallback) {
+        this.onMassageReceivedCallback = onMassageReceivedCallback;
+        Thread t = new Thread(() -> {
             EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
                 Bootstrap b = new Bootstrap();
@@ -25,14 +27,7 @@ public class Network {
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
                                 channel = socketChannel;
-                                socketChannel.pipeline().addLast(new StringDecoder(), new StringEncoder(),
-                                        new SimpleChannelInboundHandler<String>() {
-                                            @Override
-                                            protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
-                                                System.out.println(s);
-                                            }
-                                        }
-                                );
+                                socketChannel.pipeline().addLast(new StringDecoder(), new StringEncoder(), new ClientHandler(onMassageReceivedCallback));
                             }
                         });
                 ChannelFuture future = b.connect(HOST, PORT).sync();
@@ -42,10 +37,12 @@ public class Network {
             } finally {
                 workerGroup.shutdownGracefully();
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
-    public void sendMessage(String str){
+    public void sendMessage(String str) {
         channel.writeAndFlush(str);
     }
 }

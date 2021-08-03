@@ -32,7 +32,8 @@ public class MainHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        System.out.println("Клиент" + clientName + " отвалился");
+        channels.remove(ctx.channel());
         ctx.close();
     }
 }
